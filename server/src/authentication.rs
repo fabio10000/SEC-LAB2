@@ -66,19 +66,21 @@ impl Authenticate {
         let email: String = connection.receive()?;
         let user = Database::get(&email)?;
         if user.is_none() {
+            // act like the user exists to avoid leaking info about existing users
             let _ = connection.receive()?;
             connection.send(&Response::Error)?;
             return Ok(None)
         }
         let mut user = user.unwrap();
+
         let mut s_token: [u8; 4] = [0; 4];
         random_bytes(&mut s_token)?;
-        let s_token = hex::encode_upper(&s_token);
 
+        let s_token = hex::encode_upper(&s_token);
         send_mail(
             &format!("{} <{}>", user.email, user.email), 
             format!("Reset your password!"), 
-            format!("Your resete token is: {}", s_token)
+            format!("Your reset token is: {}", s_token)
         )?;
 
         let c_token: String = connection.receive()?;
@@ -96,6 +98,7 @@ impl Authenticate {
             } else {
                 connection.send(&false)?;
             }
+
             let new_password: ResetForm = connection.receive()?;
             user.salt = new_password.salt;
             user.pwd_hash = new_password.pwd_hash;
@@ -112,12 +115,15 @@ impl Authenticate {
 
     fn authenticate(connection: &mut Connection) -> Result<Option<User>, Box<dyn Error>> {
         let email: String = connection.receive()?;
+
+        // compute salt before checking if user exists to avoid timing attacks
         let mut rand_salt: [u8; 16] = [0; 16];
         random_bytes(&mut rand_salt)?;
 
         let user = match Database::get(&email)? {
             Some(u) => u,
-            None => User {
+            // if user does not exist send random salt to avoid leaking info about existing users
+            None => User { 
                 email,
                 salt: rand_salt.to_vec(),
                 pwd_hash: vec![],

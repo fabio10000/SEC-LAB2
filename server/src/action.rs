@@ -23,7 +23,7 @@ impl Action {
 
     fn switch_2fa(user: &mut User, connection: &mut Connection) -> Result<bool, Box<dyn Error>> {
         user.is_2fa = !user.is_2fa;
-        Database::insert(&user)?;
+        Database::insert(&user);
         connection.send(&user.is_2fa)?;
         Ok(true)
     }

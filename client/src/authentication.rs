@@ -54,6 +54,7 @@ impl Authenticate {
                 .add_err_test(|input| validations::is_valid_password(input), "Invalid password")
                 .get();
             
+            // config is not stored as we always use the preconfigured Config::interactive
             let (pwd_hash, salt, _) = hash_pwd(password).into_parts();
             
             let yubikey = match Yubi::get_public_key() {
@@ -100,6 +101,7 @@ impl Authenticate {
                     false => Ok(()),
                     true => {
                         println!("< 2FA >");
+                        // signing the previous challenge that way there is no need to add another call to the server
                         let signed_chal = Yubi::sign_message(&challenge.chal)?.to_vec();
                         connection.send(&signed_chal)?;
                         match connection.receive()? {
@@ -120,11 +122,14 @@ impl Authenticate {
             .get();
         connection.send(&email)?;
         println!("An email as been sent to your email, if an account exists.");
+
         let token = input::<String>().repeat_msg("- Email token: ").get();
         connection.send(&token)?;
+
         match connection.receive()? {
-            Response::Ok => {
-                if connection.receive()? {
+            Response::Ok => { // token ok
+                // if 2fa enabled we authenticate the user with it's yubikey before proceed
+                if connection.receive()? { // true if 2fa enabled
                     let signed_chal = Yubi::sign_message(&token.as_bytes().to_vec())?.to_vec();
                     connection.send(&signed_chal)?;
 
