@@ -25,7 +25,7 @@
 
 5. For sending the email, what are the advantages of using an application password?
 
-   > TODO:
+   > TODO
 
 6. In the Yubikey, what is the purpose of the management key, the pin and the puk?
 
