@@ -8,12 +8,13 @@
 
 1. What are the advantages of a challenge-response authentication compared to a weak authentication protocol ?
 
-   > Le mot de passe n'est jamais envoyé en clair au serveur
+   > Le mot de passe n'est jamais envoyé en clair au serveur, donc impossible de récupérer le mot de passe en interceptant le trafique.
 
 2. In your application, when do you require the user to input its Yubikey? Justify.
 
    > - Au moment de la création du compte afin de récupérer la clé publique et l'envoyer au serveur
-   > - Au moment de la connexion afin de signer un message à l'aide de la clé privée de la Yubikey, qui sera vérifié par le serveur
+   > - Au moment de la connexion si connexion 2FA activée. De cette façon si un attaquant a récupéré le mot de passe il ne pourra pas se connecter.
+   > - Au moment du reset du mot de passe si connexion 2FA est activée. De cette façon si un attaquant a compromis l'email d'un utilisateur il ne peut pas réinitialiser son mot de passe.
 
 3. What can you do to handle Yubilkey losses?
 
@@ -25,7 +26,10 @@
 
 5. For sending the email, what are the advantages of using an application password?
 
-   > TODO
+   > Premièrement ça permet de ne pas publier les crédentials sur un repo dans le cas ou on fait du versioning avec github par exemple.
+   > Ensuite ça permet de laissser la possibilité a chaque utilisateur d'avoir ça propre configuration/credentials.
+   > Pour finir ça permet de séparer tout ce qui est configurations de la partie logique du code.
+
 
 6. In the Yubikey, what is the purpose of the management key, the pin and the puk?
 

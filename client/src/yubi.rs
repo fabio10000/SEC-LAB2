@@ -3,6 +3,7 @@ use std::io::Read;
 use yubikey::*;
 use x509::SubjectPublicKeyInfo;
 use read_input::prelude::*;
+use ring::digest;
 
 pub struct Yubi;
 
@@ -37,6 +38,6 @@ impl Yubi {
             println!("Wrong PIN {} retries remaining!", yubikey.get_pin_retries().unwrap());
         }
         
-        Ok(piv::sign_data(&mut yubikey, &msg, piv::AlgorithmId::EccP256, piv::SlotId::Authentication)?)
+        Ok(piv::sign_data(&mut yubikey, &digest::digest(&digest::SHA256, &msg).as_ref(), piv::AlgorithmId::EccP256, piv::SlotId::Authentication)?)
     }
 }

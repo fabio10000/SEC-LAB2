@@ -13,4 +13,5 @@ strum_macros = "0.20"
 yubikey = "0.5"
 x509 = "0.2.0"
 dryoc = {version = "0.3.12", features = ["serde"] }
+ring = "0.16.20"
 shared_stuff = { path = "../shared_stuff", version = "*" }

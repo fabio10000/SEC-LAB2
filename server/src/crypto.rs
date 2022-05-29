@@ -2,14 +2,8 @@ use rand::rngs::EntropyRng;
 use rand::RngCore;
 use std::error::Error;
 use std::fmt;
-use p256::{
-    ecdsa::{
-        VerifyingKey, 
-        Signature, 
-        signature::Verifier
-    },
-    EncodedPoint
-};
+
+use ring::signature::{UnparsedPublicKey, self};
 
 #[derive(Debug)]
 struct InvalidPublicKey(String);
@@ -29,14 +23,10 @@ pub fn random_bytes(result: &mut [u8]) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-// todo: not working
 pub fn verify_signature(pk: &Vec<u8>, message: &Vec<u8>, signature: &Vec<u8>) -> Result<(), Box<dyn Error>> {
-    let encoded_point = match EncodedPoint::from_bytes(pk) {
-        Ok(enc) => enc,
-        Err(_) => return Err(Box::new(InvalidPublicKey("Invalid publickey".into())))
-    };
-    println!("encode OK");
-    let verifier = VerifyingKey::from_encoded_point(&encoded_point)?;
-    println!("verifier OK");
-    Ok(verifier.verify(message, &Signature::from_der(signature)?)?)
+    let key = UnparsedPublicKey::new(&signature::ECDSA_P256_SHA256_ASN1, &pk);
+    match key.verify(message, signature) {
+        Ok(_) => Ok(()),
+        Err(_) => Err("Verification Error".into())
+    }
 }
